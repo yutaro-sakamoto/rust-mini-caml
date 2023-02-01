@@ -5,6 +5,7 @@ lalrpop_mod!(pub calculator1);
 lalrpop_mod!(pub calculator2);
 lalrpop_mod!(pub calculator3);
 lalrpop_mod!(pub calculator4);
+lalrpop_mod!(pub calculator5);
 
 pub mod ast;
 
@@ -35,6 +36,22 @@ fn calculator3() {
 fn calculator4() {
     let expr = calculator4::ExprParser::new().parse("22*44+66").unwrap();
     assert_eq!(&format!("{:?}", expr), "((22 * 44) + 66)");
+}
+
+#[test]
+fn calculator5() {
+    let expr = calculator5::ExprsParser::new().parse("").unwrap();
+    assert_eq!(&format!("{:?}", expr), "[]");
+
+    let expr = calculator5::ExprsParser::new()
+        .parse("22 * 44 + 66")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[((22 * 44) + 66)]");
+
+    let expr = calculator5::ExprsParser::new()
+        .parse("22 * 44 + 66, 13*3")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[((22 * 44) + 66), (13 * 3)]");
 }
 
 #[cfg(not(test))]
