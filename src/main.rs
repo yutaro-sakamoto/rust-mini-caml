@@ -6,8 +6,15 @@ lalrpop_mod!(pub calculator2);
 lalrpop_mod!(pub calculator3);
 lalrpop_mod!(pub calculator4);
 lalrpop_mod!(pub calculator5);
+lalrpop_mod!(pub calculator6);
 
 pub mod ast;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum Calculator6Error {
+    InputTooBig,
+    OddNumber,
+}
 
 #[test]
 fn calculator1() {
@@ -52,6 +59,29 @@ fn calculator5() {
         .parse("22 * 44 + 66, 13*3")
         .unwrap();
     assert_eq!(&format!("{:?}", expr), "[((22 * 44) + 66), (13 * 3)]");
+}
+
+#[test]
+fn calculator6() {
+    use lalrpop_util::ParseError;
+
+    let expr = calculator6::ExprsParser::new().parse("2147483648");
+    assert!(expr.is_err());
+    assert_eq!(
+        expr.unwrap_err(),
+        ParseError::User {
+            error: Calculator6Error::InputTooBig
+        }
+    );
+
+    let expr = calculator6::ExprsParser::new().parse("3");
+    assert!(expr.is_err());
+    assert_eq!(
+        expr.unwrap_err(),
+        ParseError::User {
+            error: Calculator6Error::OddNumber
+        }
+    );
 }
 
 #[cfg(not(test))]
