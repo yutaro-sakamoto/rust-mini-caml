@@ -8,6 +8,7 @@ lalrpop_mod!(pub calculator4);
 lalrpop_mod!(pub calculator5);
 lalrpop_mod!(pub calculator6);
 lalrpop_mod!(pub calculator7);
+lalrpop_mod!(pub calculator8);
 
 pub mod ast;
 
@@ -105,6 +106,15 @@ fn calculator7() {
     assert_eq!(&format!("{:?}", expr), "[(error * error)]");
 
     assert_eq!(errors.len(), 4);
+}
+
+#[test]
+fn calculator8() {
+    let scale = 2;
+    let expr = calculator8::ExprsParser::new()
+        .parse(scale, "11 * 22 + 33")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[((22 * 44) + 66)]");
 }
 
 #[cfg(not(test))]
