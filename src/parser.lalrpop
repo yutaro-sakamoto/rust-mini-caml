@@ -1,0 +1,38 @@
+use crate::ast::Expr;
+grammar;
+
+pub Exprs: Expr = {
+    LPAREN => Expr::Empty
+};
+//TODO implement integer, float, IDENT
+match {
+    "(" => LPAREN,
+    ")" => RPAREN,
+    r"/\(*[^*]*\*+(?:[^/*][^*]*\*+)*\)" => {}, //comment
+    "true" => TRUE,
+    "false" => FALSE,
+    "not" => NOT,
+    "+" => PLUS,
+    "-" => MINUS,
+    "-." => MINUS_DOT,
+    "+." => PLUS_DOT,
+    "*." => AST_DOT,
+    "/." => SLASH_DOT,
+    "=" => EQUAL,
+    "<>" => LESS_GREATER,
+    "<=" => LESS_EQUAL,
+    ">=" => GREATER_EQUAL,
+    "<" => LESS,
+    ">" => GREATER,
+    "if" => IF,
+    "then" => THEN,
+    "else" => ELSE,
+    "let" => LET,
+    "in" => IN,
+    "rec" => REC,
+    "," => COMMA,
+    "Array.create" => ARRAY_CREATE,
+    "." => DOT,
+    "<-" => LESS_MINUS,
+    ";" => SEMICOLON,
+}
