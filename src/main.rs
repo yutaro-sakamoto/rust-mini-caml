@@ -7,6 +7,7 @@ lalrpop_mod!(pub calculator3);
 lalrpop_mod!(pub calculator4);
 lalrpop_mod!(pub calculator5);
 lalrpop_mod!(pub calculator6);
+lalrpop_mod!(pub calculator7);
 
 pub mod ast;
 
@@ -82,6 +83,28 @@ fn calculator6() {
             error: Calculator6Error::OddNumber
         }
     );
+}
+
+#[test]
+fn calculator7() {
+    let mut errors = Vec::new();
+
+    let expr = calculator7::ExprsParser::new()
+        .parse(&mut errors, "22 * + 3")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[((22 * error) + 3)]");
+
+    let expr = calculator7::ExprsParser::new()
+        .parse(&mut errors, "22 * 44 + 66, *3")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[((22 * 44) + 66), (error * 3)]");
+
+    let expr = calculator7::ExprsParser::new()
+        .parse(&mut errors, "*")
+        .unwrap();
+    assert_eq!(&format!("{:?}", expr), "[(error * error)]");
+
+    assert_eq!(errors.len(), 4);
 }
 
 #[cfg(not(test))]
