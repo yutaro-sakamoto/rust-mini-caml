@@ -36,7 +36,3 @@ pub struct FunDef {
     args: Vec<(Id, Type)>,
     body: Type,
 }
-
-pub enum SimpleExp {
-    Get(Box<SimpleExp>, Box<Exp>),
-}

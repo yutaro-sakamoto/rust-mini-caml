@@ -10,6 +10,7 @@ pub enum Type {
     Var(Option<Box<Type>>),
 }
 
+#[allow(dead_code)]
 fn gentyp() -> Type {
     Type::Var(None)
 }

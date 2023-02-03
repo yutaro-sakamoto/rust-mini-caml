@@ -9,7 +9,10 @@ pub mod typedef;
 
 #[test]
 fn parser_test() {
-    assert_eq!(parser::ExpParser::new().parse("(").unwrap(), ast::Exp::Unit)
+    assert_eq!(
+        *(parser::ExpParser::new().parse("()").unwrap()),
+        ast::Exp::Unit
+    )
 }
 
 fn main() {

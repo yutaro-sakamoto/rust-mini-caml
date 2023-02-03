@@ -1,39 +1,51 @@
-use crate::ast::{Exp, SimpleExp};
+use crate::ast::Exp;
+
 grammar;
 
-pub Exp: Exp = {
-    LPAREN => Exp::Unit
+pub Exp: Box<Exp> = {
+    SimpleExp => <>,
 };
 
-//TODO implement integer, float, IDENT
-match {
-    "(" => LPAREN,
-    ")" => RPAREN,
-    r"/\(*[^*]*\*+(?:[^/*][^*]*\*+)*\)" => {}, //comment
-    "true" => TRUE,
-    "false" => FALSE,
-    "not" => NOT,
-    "+" => PLUS,
-    "-" => MINUS,
-    "-." => MINUS_DOT,
-    "+." => PLUS_DOT,
-    "*." => AST_DOT,
-    "/." => SLASH_DOT,
-    "=" => EQUAL,
-    "<>" => LESS_GREATER,
-    "<=" => LESS_EQUAL,
-    ">=" => GREATER_EQUAL,
-    "<" => LESS,
-    ">" => GREATER,
-    "if" => IF,
-    "then" => THEN,
-    "else" => ELSE,
-    "let" => LET,
-    "in" => IN,
-    "rec" => REC,
-    "," => COMMA,
-    "Array.create" => ARRAY_CREATE,
-    "." => DOT,
-    "<-" => LESS_MINUS,
-    ";" => SEMICOLON,
+SimpleExp: Box<Exp> = {
+    "(" <Exp> ")" => <>,
+    "(" ")" => Box::new(Exp::Unit),
+    "true" => Box::new(Exp::Bool(true)),
+    "false" => Box::new(Exp::Bool(false)),
+    r"[0-9]+" => Box::new(Exp::Int(<>.parse().unwrap())),
+    r"[0-9]+\.[0-9]+" => Box::new(Exp::Float(<>.parse().unwrap())),
+    r"[a-zA-Z_][0-9a-zA-Z_]*" => Box::new(Exp::Var(<>.to_string())),
+    <SimpleExp> "." "(" <Exp> ")" => Box::new(Exp::Get(<>)),
 }
+
+//TODO implement integer, float, IDENT
+//match {
+//    "(" => LPAREN,
+//    ")" => RPAREN,
+//    r"/\(*[^*]*\*+(?:[^/*][^*]*\*+)*\)" => {}, //comment
+//    "true" => TRUE,
+//    "false" => FALSE,
+//    "not" => NOT,
+//    "+" => PLUS,
+//    "-" => MINUS,
+//    "-." => MINUS_DOT,
+//    "+." => PLUS_DOT,
+//    "*." => AST_DOT,
+//    "/." => SLASH_DOT,
+//    "=" => EQUAL,
+//    "<>" => LESS_GREATER,
+//    "<=" => LESS_EQUAL,
+//    ">=" => GREATER_EQUAL,
+//    "<" => LESS,
+//    ">" => GREATER,
+//    "if" => IF,
+//    "then" => THEN,
+//    "else" => ELSE,
+//    "let" => LET,
+//    "in" => IN,
+//    "rec" => REC,
+//    "," => COMMA,
+//    "Array.create" => ARRAY_CREATE,
+//    "." => DOT,
+//    "<-" => LESS_MINUS,
+//    ";" => SEMICOLON,
+//}
