@@ -1,9 +1,10 @@
-use crate::ast::Expr;
+use crate::ast::{Exp, SimpleExp};
 grammar;
 
-pub Exprs: Expr = {
-    LPAREN => Expr::Empty
+pub Exp: Exp = {
+    LPAREN => Exp::Unit
 };
+
 //TODO implement integer, float, IDENT
 match {
     "(" => LPAREN,

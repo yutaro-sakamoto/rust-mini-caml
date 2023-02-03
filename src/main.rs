@@ -4,13 +4,12 @@ extern crate lalrpop_util;
 lalrpop_mod!(pub parser);
 
 pub mod ast;
+pub mod id;
+pub mod typedef;
 
 #[test]
 fn parser_test() {
-    assert_eq!(
-        parser::ExprsParser::new().parse("(").unwrap(),
-        ast::Expr::Empty
-    )
+    assert_eq!(parser::ExpParser::new().parse("(").unwrap(), ast::Exp::Unit)
 }
 
 fn main() {
