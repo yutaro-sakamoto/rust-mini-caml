@@ -5,15 +5,8 @@ lalrpop_mod!(pub parser);
 
 pub mod ast;
 pub mod id;
+mod test;
 pub mod typedef;
-
-#[test]
-fn parser_test() {
-    assert_eq!(
-        *(parser::ExpParser::new().parse("()").unwrap()),
-        ast::Exp::Unit
-    )
-}
 
 fn main() {
     let source = "let a=1 in a";

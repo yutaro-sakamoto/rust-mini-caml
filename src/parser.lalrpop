@@ -31,7 +31,7 @@ PATTERN: Vec<(Id, Type)> = {
 
 FormalArgs: Vec<(Id, Type)> = {
     IDENT => vec![add_type(<>)],
-    <e:IDENT> <mut v:FormalArgs> => {v.push(add_type(e)); v}
+    <mut v:FormalArgs> <e:IDENT> => {v.push(add_type(e)); v}
 }
 
 SemicolonExp: Box<Exp> = {
