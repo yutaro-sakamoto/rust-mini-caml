@@ -1,7 +1,7 @@
 extern crate lalrpop_util;
+#[cfg(test)]
 mod parser {
     lalrpop_mod!(pub parser);
-    use crate::ast::Exp;
 
     fn test_debug_idempotence(s: &str) {
         assert_eq!(

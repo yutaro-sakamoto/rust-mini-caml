@@ -1,3 +1,5 @@
+use crate::ast::Exp;
+use crate::id::Id;
 use crate::typedef::Type;
 
 fn deref_type(t: &mut Type) -> Type {
@@ -21,5 +23,16 @@ fn deref_type(t: &mut Type) -> Type {
             }
         },
         other => other.clone(),
+    }
+}
+
+fn deref_id_type(v: &mut (Id, Type)) -> (Id, Type) {
+    (v.0.clone(), deref_type(&mut v.1))
+}
+
+fn deref_term(exp: &mut Exp) -> Exp {
+    match exp {
+        Exp::Not(e) => Exp::Not(Box::new(deref_term(&mut *e))),
+        e => e.clone(),
     }
 }
