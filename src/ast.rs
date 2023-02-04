@@ -23,7 +23,7 @@ pub enum Exp {
     Let((Id, Type), Box<Exp>, Box<Exp>),
     Var(Id),
     LetRec(Box<FunDef>, Box<Exp>),
-    App(Vec<(Box<Exp>, Box<Exp>)>),
+    App(Box<Exp>, Vec<Box<Exp>>),
     Tuple(Vec<Box<Exp>>),
     Array(Box<Exp>, Box<Exp>),
     Get(Box<Exp>, Box<Exp>),

@@ -23,13 +23,60 @@ IfExp: Box<Exp> = {
 
 TupleExp: Box<Exp> = {
     <Elems> => Box::new(Exp::Tuple(<>)),
-    SimpleExp
+    CompExp
 };
 
-
 Elems: Vec<Box<Exp>> = {
-    <SimpleExp> "," <SimpleExp> => vec![<>],
-    <mut v:Elems> "," <e:SimpleExp> => {v.push(e); v},
+    <CompExp> "," <CompExp> => vec![<>],
+    <mut v:Elems> "," <e:CompExp> => {v.push(e); v},
+}
+
+Tier<Op,NextTier>: Box<Expr> = {
+    Tier<Op,NextTier> Op NextTier => Box::new(Exp::Op(<>)),
+    NextTier
+};
+
+CompExp: Box<Exp> = {
+    <AddSubExp> "=" <AddSubExp> => Box::new(Exp::Eq(<>)),
+    <AddSubExp> "<=" <AddSubExp> => Box::new(Exp::LE(<>)),
+    <l:AddSubExp> ">=" <r:AddSubExp> => Box::new(Exp::LE(r, l)),
+    <l:AddSubExp> "<" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(r, l)))),
+    <l:AddSubExp> ">" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(l, r)))),
+    <l:AddSubExp> "<>" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::Eq(l, r)))),
+    AddSubExp
+}
+
+AddSubExp: Box<Exp> = {
+    <MulDivExp> "+" <MulDivExp> => Box::new(Exp::Add(<>)),
+    <MulDivExp> "-" <MulDivExp> => Box::new(Exp::Sub(<>)),
+    <MulDivExp> "+." <MulDivExp> => Box::new(Exp::FAdd(<>)),
+    <MulDivExp> "-." <MulDivExp> => Box::new(Exp::FSub(<>)),
+    MulDivExp
+}
+
+MulDivExp: Box<Exp> = {
+    <UnaryExp> "*." <UnaryExp> => Box::new(Exp::FMul(<>)),
+    <UnaryExp> "/." <UnaryExp> => Box::new(Exp::FDiv(<>)),
+    UnaryExp
+}
+
+UnaryExp: Box<Exp> = {
+    "-" <v:AppExp> => match &(*v) {
+        Exp::Float(f) => Box::new(Exp::Float(-f)),
+        e => Box::new(Exp::Neg(v))
+    },
+    AppExp
+}
+
+AppExp: Box<Exp> = {
+    SimpleExp ActualArgs => Box::new(Exp::App(<>)),
+    "Array.create" <SimpleExp> <SimpleExp> => Box::new(Exp::Array(<>)),
+    SimpleExp
+}
+
+ActualArgs: Vec<Box<Exp>> = {
+    SimpleExp => vec![<>],
+    <mut v:ActualArgs> <e:SimpleExp> => {v.push(e); v}
 }
 
 IDENT: String = {
