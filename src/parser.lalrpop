@@ -1,6 +1,7 @@
 use crate::ast::Exp;
 use crate::id::gen_tmp;
 use crate::typedef::Type;
+use std::vec;
 grammar;
 
 pub Exp: Box<Exp> = {
@@ -9,10 +10,26 @@ pub Exp: Box<Exp> = {
     SemicolonExp
 };
 
-pub SemicolonExp: Box<Exp> = {
-    <l:SemicolonExp> ";" <r:SimpleExp>
+SemicolonExp: Box<Exp> = {
+    <l:SemicolonExp> ";" <r:IfExp>
         => Box::new(Exp::Let((gen_tmp(Type::Unit), Type::Unit), l, r)),
+    IfExp
+}
+
+IfExp: Box<Exp> = {
+    "if" <TupleExp> "then" <TupleExp> "else" <TupleExp> => Box::new(Exp::If(<>)),
+    TupleExp
+}
+
+TupleExp: Box<Exp> = {
+    <Elems> => Box::new(Exp::Tuple(<>)),
     SimpleExp
+};
+
+
+Elems: Vec<Box<Exp>> = {
+    <SimpleExp> "," <SimpleExp> => vec![<>],
+    <mut v:Elems> "," <e:SimpleExp> => {v.push(e); v},
 }
 
 IDENT: String = {
