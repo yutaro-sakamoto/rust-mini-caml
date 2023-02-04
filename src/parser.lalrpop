@@ -1,10 +1,23 @@
 use crate::ast::Exp;
-
+use crate::id::gen_tmp;
+use crate::typedef::Type;
 grammar;
 
 pub Exp: Box<Exp> = {
-    SimpleExp => <>,
+    "let" <var:IDENT> "=" <e1:Exp> "in" <e2:Exp>
+        => Box::new(Exp::Let((var, Type::Var(None)), e1, e2)),
+    SemicolonExp
 };
+
+pub SemicolonExp: Box<Exp> = {
+    <l:SemicolonExp> ";" <r:SimpleExp>
+        => Box::new(Exp::Let((gen_tmp(Type::Unit), Type::Unit), l, r)),
+    SimpleExp
+}
+
+IDENT: String = {
+    r"[a-zA-Z_][0-9a-zA-Z_]*" => <>.to_string()
+}
 
 SimpleExp: Box<Exp> = {
     "(" <Exp> ")" => <>,
@@ -12,40 +25,7 @@ SimpleExp: Box<Exp> = {
     "true" => Box::new(Exp::Bool(true)),
     "false" => Box::new(Exp::Bool(false)),
     r"[0-9]+" => Box::new(Exp::Int(<>.parse().unwrap())),
-    r"[0-9]+\.[0-9]+" => Box::new(Exp::Float(<>.parse().unwrap())),
-    r"[a-zA-Z_][0-9a-zA-Z_]*" => Box::new(Exp::Var(<>.to_string())),
+    r"[0-9]+\.[0-9]*" => Box::new(Exp::Float(<>.parse().unwrap())),
+    IDENT => Box::new(Exp::Var(<>)),
     <SimpleExp> "." "(" <Exp> ")" => Box::new(Exp::Get(<>)),
 }
-
-//TODO implement integer, float, IDENT
-//match {
-//    "(" => LPAREN,
-//    ")" => RPAREN,
-//    r"/\(*[^*]*\*+(?:[^/*][^*]*\*+)*\)" => {}, //comment
-//    "true" => TRUE,
-//    "false" => FALSE,
-//    "not" => NOT,
-//    "+" => PLUS,
-//    "-" => MINUS,
-//    "-." => MINUS_DOT,
-//    "+." => PLUS_DOT,
-//    "*." => AST_DOT,
-//    "/." => SLASH_DOT,
-//    "=" => EQUAL,
-//    "<>" => LESS_GREATER,
-//    "<=" => LESS_EQUAL,
-//    ">=" => GREATER_EQUAL,
-//    "<" => LESS,
-//    ">" => GREATER,
-//    "if" => IF,
-//    "then" => THEN,
-//    "else" => ELSE,
-//    "let" => LET,
-//    "in" => IN,
-//    "rec" => REC,
-//    "," => COMMA,
-//    "Array.create" => ARRAY_CREATE,
-//    "." => DOT,
-//    "<-" => LESS_MINUS,
-//    ";" => SEMICOLON,
-//}

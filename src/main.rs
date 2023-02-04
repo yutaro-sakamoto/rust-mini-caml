@@ -16,5 +16,8 @@ fn parser_test() {
 }
 
 fn main() {
+    let source = "let a=1 in a";
+    let x = parser::ExpParser::new().parse(source);
+    println!("result: {}", format!("{x:?}"));
     println!("Hello, world!");
 }
