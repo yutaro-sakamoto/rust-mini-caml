@@ -1,3 +1,4 @@
+use crate::id::Id;
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Type {
     Unit,
@@ -10,7 +11,10 @@ pub enum Type {
     Var(Option<Box<Type>>),
 }
 
-#[allow(dead_code)]
-fn gentyp() -> Type {
+pub fn gen_type() -> Type {
     Type::Var(None)
+}
+
+pub fn add_type(id: Id) -> (Id, Type) {
+    (id, gen_type())
 }

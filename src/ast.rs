@@ -21,8 +21,9 @@ pub enum Exp {
     LE(Box<Exp>, Box<Exp>),
     If(Box<Exp>, Box<Exp>, Box<Exp>),
     Let((Id, Type), Box<Exp>, Box<Exp>),
+    LetTuple(Vec<(Id, Type)>, Box<Exp>, Box<Exp>),
     Var(Id),
-    LetRec(Box<FunDef>, Box<Exp>),
+    LetRec(FunDef, Box<Exp>),
     App(Box<Exp>, Vec<Box<Exp>>),
     Tuple(Vec<Box<Exp>>),
     Array(Box<Exp>, Box<Exp>),
@@ -30,9 +31,9 @@ pub enum Exp {
     Put(Box<Exp>, Box<Exp>, Box<Exp>),
 }
 
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FunDef {
-    name: (Id, Type),
-    args: Vec<(Id, Type)>,
-    body: Type,
+    pub name: (Id, Type),
+    pub args: Vec<(Id, Type)>,
+    pub body: Box<Exp>,
 }

@@ -1,14 +1,38 @@
-use crate::ast::Exp;
-use crate::id::gen_tmp;
-use crate::typedef::Type;
+use crate::ast::{Exp, FunDef};
+use crate::id::{Id, gen_tmp};
+use crate::typedef::{Type, add_type};
 use std::vec;
+
 grammar;
 
 pub Exp: Box<Exp> = {
     "let" <var:IDENT> "=" <e1:Exp> "in" <e2:Exp>
         => Box::new(Exp::Let((var, Type::Var(None)), e1, e2)),
+    "let" "rec" <FunDef> "in" <Exp>
+        => Box::new(Exp::LetRec(<>)),
+    "let" "(" <PATTERN> ")" "=" <Exp> "in" <Exp>
+        => Box::new(Exp::LetTuple(<>)),
     SemicolonExp
-};
+}
+
+FunDef: FunDef = {
+    <func_name:IDENT> <formal_args:FormalArgs> "=" <v:Exp> =>
+    FunDef {
+        name: add_type(func_name),
+        args: formal_args,
+        body: v,
+    }
+}
+
+PATTERN: Vec<(Id, Type)> = {
+    <mut v:PATTERN> "," <e:IDENT> => {v.push(add_type(e)); v},
+    <e1:IDENT> "," <e2:IDENT> => vec![add_type(e1), add_type(e2)],
+}
+
+FormalArgs: Vec<(Id, Type)> = {
+    IDENT => vec![add_type(<>)],
+    <e:IDENT> <mut v:FormalArgs> => {v.push(add_type(e)); v}
+}
 
 SemicolonExp: Box<Exp> = {
     <l:SemicolonExp> ";" <r:IfExp>
@@ -24,7 +48,7 @@ IfExp: Box<Exp> = {
 TupleExp: Box<Exp> = {
     <Elems> => Box::new(Exp::Tuple(<>)),
     CompExp
-};
+}
 
 Elems: Vec<Box<Exp>> = {
     <CompExp> "," <CompExp> => vec![<>],
@@ -37,20 +61,20 @@ Tier<Op,NextTier>: Box<Expr> = {
 };
 
 CompExp: Box<Exp> = {
-    <AddSubExp> "=" <AddSubExp> => Box::new(Exp::Eq(<>)),
-    <AddSubExp> "<=" <AddSubExp> => Box::new(Exp::LE(<>)),
-    <l:AddSubExp> ">=" <r:AddSubExp> => Box::new(Exp::LE(r, l)),
-    <l:AddSubExp> "<" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(r, l)))),
-    <l:AddSubExp> ">" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(l, r)))),
-    <l:AddSubExp> "<>" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::Eq(l, r)))),
+    <CompExp> "=" <AddSubExp> => Box::new(Exp::Eq(<>)),
+    <CompExp> "<=" <AddSubExp> => Box::new(Exp::LE(<>)),
+    <l:CompExp> ">=" <r:AddSubExp> => Box::new(Exp::LE(r, l)),
+    <l:CompExp> "<" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(r, l)))),
+    <l:CompExp> ">" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::LE(l, r)))),
+    <l:CompExp> "<>" <r:AddSubExp> => Box::new(Exp::Not(Box::new(Exp::Eq(l, r)))),
     AddSubExp
 }
 
 AddSubExp: Box<Exp> = {
-    <MulDivExp> "+" <MulDivExp> => Box::new(Exp::Add(<>)),
-    <MulDivExp> "-" <MulDivExp> => Box::new(Exp::Sub(<>)),
-    <MulDivExp> "+." <MulDivExp> => Box::new(Exp::FAdd(<>)),
-    <MulDivExp> "-." <MulDivExp> => Box::new(Exp::FSub(<>)),
+    <AddSubExp> "+" <MulDivExp> => Box::new(Exp::Add(<>)),
+    <AddSubExp> "-" <MulDivExp> => Box::new(Exp::Sub(<>)),
+    <AddSubExp> "+." <MulDivExp> => Box::new(Exp::FAdd(<>)),
+    <AddSubExp> "-." <MulDivExp> => Box::new(Exp::FSub(<>)),
     MulDivExp
 }
 
@@ -65,12 +89,15 @@ UnaryExp: Box<Exp> = {
         Exp::Float(f) => Box::new(Exp::Float(-f)),
         e => Box::new(Exp::Neg(v))
     },
+    "-." <AppExp> => Box::new(Exp::FNeg(<>)),
     AppExp
 }
 
 AppExp: Box<Exp> = {
     SimpleExp ActualArgs => Box::new(Exp::App(<>)),
+    <SimpleExp> "." "(" <Exp> ")" "<-" "(" <Exp> ")" => Box::new(Exp::Put(<>)),
     "Array.create" <SimpleExp> <SimpleExp> => Box::new(Exp::Array(<>)),
+    "Not" <SimpleExp> => Box::new(Exp::Not(<>)),
     SimpleExp
 }
 
