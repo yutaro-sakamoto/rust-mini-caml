@@ -7,6 +7,7 @@ fn deref_type(t: &mut Type) -> Type {
             Box::new(deref_type(&mut *ret)),
         ),
         Type::Tuple(elems) => Type::Tuple(elems.iter_mut().map(|x| deref_type(x)).collect()),
+        Type::Array(e) => Type::Array(Box::new(deref_type(e))),
         Type::Var(ref mut v) => match v {
             None => {
                 eprintln!("uninstantiated type variable detected; assuming int@.");
