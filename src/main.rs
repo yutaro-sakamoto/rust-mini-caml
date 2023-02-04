@@ -7,6 +7,7 @@ pub mod ast;
 pub mod id;
 mod test;
 pub mod typedef;
+pub mod typing;
 
 fn main() {
     let source = "let a=1 in a";

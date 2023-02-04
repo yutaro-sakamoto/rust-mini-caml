@@ -1,5 +1,4 @@
 extern crate lalrpop_util;
-
 mod parser {
     lalrpop_mod!(pub parser);
     use crate::ast::Exp;
