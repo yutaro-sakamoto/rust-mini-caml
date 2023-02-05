@@ -119,3 +119,17 @@ fn deref_term(exp: &mut Exp) -> Exp {
         e => e.clone(),
     }
 }
+
+fn occur(r1: Option<Box<Type>>, t: &Type) -> bool {
+    match t {
+        Type::Func(t2s, t2) => t2s.iter().any(|x| occur(r1.clone(), x)) || occur(r1, t2),
+        Type::Tuple(t2s) => t2s.iter().any(|x| occur(r1.clone(), x)),
+        Type::Array(t2) => occur(r1, t2),
+        Type::Var(None) => r1.is_none(),
+        Type::Var(Some(t2)) => match &r1 {
+            Some(rr1) => (**rr1 == **t2) || occur(r1, t2),
+            _ => false,
+        },
+        _ => false,
+    }
+}
