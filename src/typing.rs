@@ -1,4 +1,4 @@
-use crate::ast::Exp;
+use crate::ast::{Exp, FunDef};
 use crate::id::Id;
 use crate::typedef::Type;
 
@@ -33,6 +33,89 @@ fn deref_id_type(v: &mut (Id, Type)) -> (Id, Type) {
 fn deref_term(exp: &mut Exp) -> Exp {
     match exp {
         Exp::Not(e) => Exp::Not(Box::new(deref_term(&mut *e))),
+        Exp::Neg(e) => Exp::Neg(Box::new(deref_term(&mut *e))),
+        Exp::Add(e1, e2) => Exp::Add(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::Sub(e1, e2) => Exp::Sub(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::Eq(e1, e2) => Exp::Eq(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::LE(e1, e2) => Exp::LE(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::FNeg(e) => Exp::FNeg(Box::new(deref_term(&mut *e))),
+        Exp::FAdd(e1, e2) => Exp::FAdd(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::FSub(e1, e2) => Exp::FSub(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::FDiv(e1, e2) => Exp::FDiv(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::FMul(e1, e2) => Exp::FMul(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::If(e1, e2, e3) => Exp::If(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+            Box::new(deref_term(&mut *e3)),
+        ),
+        Exp::Let(xt, e1, e2) => Exp::Let(
+            deref_id_type(xt),
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::LetRec(
+            FunDef {
+                name: xt,
+                args: yts,
+                body: e1,
+            },
+            e2,
+        ) => Exp::LetRec(
+            FunDef {
+                name: deref_id_type(xt),
+                args: yts.iter_mut().map(|x| deref_id_type(x)).collect(),
+                body: Box::new(deref_term((e1))),
+            },
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::App(e, es) => Exp::App(
+            Box::new(deref_term(e)),
+            es.iter_mut().map(|x| Box::new(deref_term(x))).collect(),
+        ),
+        Exp::Tuple(es) => Exp::Tuple(es.iter_mut().map(|x| Box::new(deref_term(x))).collect()),
+        Exp::LetTuple(xts, e1, e2) => Exp::LetTuple(
+            xts.iter_mut().map(|x| deref_id_type(x)).collect(),
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::Array(e1, e2) => Exp::Array(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::Get(e1, e2) => Exp::Get(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+        ),
+        Exp::Put(e1, e2, e3) => Exp::Put(
+            Box::new(deref_term(&mut *e1)),
+            Box::new(deref_term(&mut *e2)),
+            Box::new(deref_term(&mut *e3)),
+        ),
+        /* Unit, Bool, Int, Float and Var*/
         e => e.clone(),
     }
 }
