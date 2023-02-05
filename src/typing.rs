@@ -133,3 +133,19 @@ fn occur(r1: Option<Box<Type>>, t: &Type) -> bool {
         _ => false,
     }
 }
+
+type Unify<'a, 'b> = (&'a mut Type, &'b mut Type);
+
+fn unify<'a, 'b>(t1: &'a mut Type, t2: &'b mut Type) -> Result<(), Unify<'a, 'b>> {
+    match (&mut *t1, &mut *t2) {
+        (Type::Var(ref mut r1), _) => {
+            if occur(None, t2) {
+                Err((t1, t2))
+            } else {
+                *r1 = Some(Box::new(t2.clone()));
+                Ok(())
+            }
+        }
+        (_, _) => Err((t1, t2)),
+    }
+}
