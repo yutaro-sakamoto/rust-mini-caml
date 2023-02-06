@@ -134,18 +134,62 @@ fn occur(r1: Option<Box<Type>>, t: &Type) -> bool {
     }
 }
 
-type Unify<'a, 'b> = (&'a mut Type, &'b mut Type);
+type Unify = (Type, Type);
 
-fn unify<'a, 'b>(t1: &'a mut Type, t2: &'b mut Type) -> Result<(), Unify<'a, 'b>> {
+fn option_box_type_equals(t1: &Option<Box<Type>>, t2: &Option<Box<Type>>) -> bool {
+    match (t1, t2) {
+        (Some(r1), Some(r2)) => **r1 == **r2,
+        (None, None) => true,
+        (_, _) => false,
+    }
+}
+
+fn unify<'a, 'b>(t1: &'a mut Type, t2: &'b mut Type) -> Result<(), Unify> {
     match (&mut *t1, &mut *t2) {
-        (Type::Var(ref mut r1), _) => {
-            if occur(None, t2) {
-                Err((t1, t2))
+        (Type::Unit, Type::Unit)
+        | (Type::Bool, Type::Bool)
+        | (Type::Int, Type::Int)
+        | (Type::Float, Type::Float) => Ok(()),
+        (Type::Func(t1s, t1_), Type::Func(t2s, t2_)) => {
+            if t1s.len() == t2s.len() {
+                for (x, y) in t1s.iter_mut().zip(t2s.iter_mut()) {
+                    match unify(x, y) {
+                        Err(s) => return Err(s),
+                        _ => {}
+                    }
+                }
+                unify(t1_, t2_)
             } else {
-                *r1 = Some(Box::new(t2.clone()));
-                Ok(())
+                Err((t1.clone(), t2.clone()))
             }
         }
-        (_, _) => Err((t1, t2)),
+        (Type::Tuple(t1s), Type::Tuple(t2s)) => {
+            if t1s.len() == t2s.len() {
+                for (x, y) in t1s.iter_mut().zip(t2s.iter_mut()) {
+                    match unify(x, y) {
+                        Err(s) => return Err(s),
+                        _ => {}
+                    }
+                }
+                Ok(())
+            } else {
+                Err((t1.clone(), t2.clone()))
+            }
+        }
+        (Type::Array(r1), Type::Array(r2)) => unify(r1, r2),
+        (Type::Var(ref mut r1), Type::Var(ref mut r2)) if option_box_type_equals(r1, r2) => Ok(()),
+        (Type::Var(ref mut r1), _) => match r1 {
+            Some(rr1) => unify(&mut *rr1, t2),
+            None => {
+                if occur(None, t2) {
+                    Err((t1.clone(), t2.clone()))
+                } else {
+                    *r1 = Some(Box::new(t2.clone()));
+                    Ok(())
+                }
+            }
+        },
+        (_, Type::Var(ref mut r2)) => unify(t2, t1),
+        (_, _) => Err((t1.clone(), t2.clone())),
     }
 }
