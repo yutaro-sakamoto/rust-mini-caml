@@ -1,13 +1,13 @@
 use crate::ast::{Exp, FunDef};
 use crate::id::{Id, gen_tmp};
-use crate::typedef::{Type, add_type};
+use crate::typedef::{Type, add_type, gen_type};
 use std::vec;
 
 grammar;
 
 pub Exp: Box<Exp> = {
     "let" <var:IDENT> "=" <e1:Exp> "in" <e2:Exp>
-        => Box::new(Exp::Let((var, Type::Var(None)), e1, e2)),
+        => Box::new(Exp::Let((var, gen_type()), e1, e2)),
     "let" "rec" <FunDef> "in" <Exp>
         => Box::new(Exp::LetRec(<>)),
     "let" "(" <PATTERN> ")" "=" <Exp> "in" <Exp>

@@ -8,11 +8,11 @@ pub enum Type {
     Func(Vec<Type>, Box<Type>),
     Tuple(Vec<Type>),
     Array(Box<Type>),
-    Var(Option<Box<Type>>),
+    Var(String),
 }
 
 pub fn gen_type() -> Type {
-    Type::Var(None)
+    Type::Var("".to_string())
 }
 
 pub fn add_type(id: Id) -> (Id, Type) {
